@@ -1,0 +1,11 @@
+---
+# tasks file for outils
+- name: Original - Installation d'outils
+  apt:
+    pkg:
+    - wget
+    - gnupg2
+    - ca-certificates
+    - lsb-release
+    - apt-transport-https
+    - software-properties-common

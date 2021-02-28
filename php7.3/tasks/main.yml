@@ -1,0 +1,162 @@
+---
+# tasks file for php7.3
+- name: Original - PHP7.3 - Installation de Php7.3 et extensions
+  apt:
+    pkg:
+    - php7.3
+    - php7.3-cli
+    - php7.3-fpm
+    - php7.3-bcmath
+    - php7.3-curl
+    - php7.3-dba
+    - php7.3-dom
+    - php7.3-enchant
+    - php7.3-fileinfo
+    - php7.3-gd
+    - php7.3-imagick
+    - php7.3-imap
+    - php7.3-intl
+    - php7.3-json
+    - php7.3-ldap
+    - php7.3-mbstring
+    - php7.3-mysqli
+    - php7.3-mysql
+    - php7.3-mysqlnd
+    - php7.3-odbc
+    - php7.3-opcache
+    - php7.3-pdo
+    - php7.3-pgsql
+    - php7.3-phar
+    - php7.3-posix
+    - php7.3-pspell
+    - php7.3-redis
+    - php7.3-soap
+    - php7.3-sqlite3
+    - php7.3-sysvmsg
+    - php7.3-sysvsem
+    - php7.3-sysvshm
+    - php7.3-tidy
+    - php7.3-xmlreader
+    - php7.3-xmlrpc
+    - php7.3-xmlwriter
+    - php7.3-xsl
+    - php7.3-zip
+
+- name: Original - PHP7.3 - Installation de l'extension Sodium php7.3
+  shell: |
+    apt install -y php-pear php7.3-dev build-essential libsodium-dev       
+    pecl install -f libsodium
+    echo "extension = sodium.so" > /etc/php/7.3/mods-available/sodium.ini
+    echo "extension = sodium.so" >> /etc/php/7.3/fpm/php.ini
+    phpenmod sodium
+  become: true
+
+- name: Original - PHP7.3 - Modification de upload_max_filesize (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^upload_max_filesize'
+    line: 'upload_max_filesize = 2M'
+    state: present
+
+- name: Original - PHP7.3 - Modification de post_max_size (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^post_max_size'
+    line: 'post_max_size = 8M'
+    state: present
+
+- name: Original - PHP7.3 - Modification de memory_limit (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^memory_limit'
+    line: 'memory_limit = 528M'
+    state: present
+
+- name: Original - PHP7.3 - Modification de max_execution_time (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^max_execution_time'
+    line: 'max_execution_time = 520'
+    state: present
+
+- name: Original - PHP7.3 - Modification de max_input_vars (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^max_input_vars'
+    line: 'max_input_vars = 3000'
+    state: present
+
+- name: Original - PHP7.3 - Modification de max_input_time (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^max_input_time'
+    line: 'max_input_time = 60'
+    state: present
+
+- name: Original - PHP7.3 - Modification de opcache.enable (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^;opcache.enable'
+    line: 'opcache.enable = on'
+    state: present
+
+- name: Original - PHP7.3 - Modification de disable_functions (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^disable_functions'
+    line: 'disable_functions = opcache_get_status'
+    state: present
+
+- name: Original - PHP7.3 - Modification de include_path (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^;include_path'
+    line: 'include_path = .'
+    state: present
+
+- name: Original - PHP7.3 - Modification de session.save_path (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^;session.save_path'
+    line: 'session.save_path = /var/lib/php/sessions'
+    state: present
+
+- name: Original - PHP7.3 - Modification de open_basedir (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^;open_basedir'
+    line: 'open_basedir = {WEBSPACEROOT}{/}{:}{TMP}{/}'
+    state: present
+
+- name: Original - PHP7.3 - Modification de error_reporting (php.ini)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php.ini
+    regexp: '^error_reporting'
+    line: 'error_reporting = E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED'
+    state: present
+
+- name: Original - PHP7.3 - Modification de pm.max_children (php-fpm.conf)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php-fpm.conf
+    line: 'pm.max_children = 1000'
+
+- name: Original - PHP7.3 - Modification de pm (php-fpm.conf)
+  lineinfile:
+    path: /etc/php/7.3/fpm/php-fpm.conf
+    line: 'pm = ondemand'
+
+- name: Original - PHP7.3 - Redémarrage de php7.3
+  shell:
+    cmd: /etc/init.d/php7.3-fpm restart
+
+- name: Original - PHP7.3 - Activation des extensions
+  shell: |
+    phpenmod -v 7.3 pdo_mysql
+    phpenmod -v 7.3 pdo_odbc
+    phpenmod -v 7.3 pdo_pgsql
+    phpenmod -v 7.3 pdo_sqlite
+
+- name: Original - redémarrage de Nginx
+  service:
+    name: nginx
+    state: restarted

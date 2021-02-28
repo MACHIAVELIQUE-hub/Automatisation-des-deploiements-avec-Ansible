@@ -1,0 +1,12 @@
+---
+# tasks file for nginx
+- name: Original - Installation de Nginx
+  apt: 
+    name: nginx
+    state: latest
+    update_cache: yes
+
+- name: Original - Nginx enable 
+  service:
+    name: nginx
+    enabled: yes

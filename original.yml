@@ -1,0 +1,12 @@
+---
+- hosts: original
+  become: yes
+
+  roles:
+    - {role: nginx}
+    - {role: depot_php}
+    - {role: php7.1}
+    - {role: php7.2}
+    - {role: php7.3}
+    - {role: composer}
+    - {role: outils}

@@ -1,0 +1,18 @@
+---
+# tasks file for ssl
+- name: Test - Certbot - Générations des clés
+  shell: |
+    certbot --nginx -d {{ nom_domaine }}  --rsa-key-size 4096  --webroot-path /var/www/html/{{ nom_domaine }} --email {{ acme_email }} --redirect --non-interactive
+  become: true
+
+# -d www.{{ nom_domaine }} 
+# --webroot
+
+- name: Test - Certbot - Renouvellement des clés
+  cron:
+    name: "Clés SSL"
+    user: "root"
+    minute: "30"
+    hour: "3"
+    weekday: "0"
+    job: "30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log"

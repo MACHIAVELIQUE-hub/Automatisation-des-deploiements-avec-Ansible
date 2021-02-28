@@ -1,0 +1,11 @@
+---
+# tasks file for depot_php
+- name: Original - Ajout du dépôt php
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+  become: true
+
+- name: Original - Mise à jour
+  apt_cache:
+    update: yes

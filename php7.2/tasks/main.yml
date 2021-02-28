@@ -1,0 +1,139 @@
+---
+# tasks file for php7.2
+- name: Original - Installation de Php7.2 et extensions
+  apt:
+    pkg:
+    - php7.2
+    - php7.2-cli
+    - php7.2-fpm
+    - php7.2-bcmath
+    - php7.2-curl
+    - php7.2-dba
+    - php7.2-dom
+    - php7.2-enchant
+    - php7.2-fileinfo
+    - php7.2-gd
+    - php7.2-imagick
+    - php7.2-imap
+    - php7.2-intl
+    - php7.2-json
+    - php7.2-ldap
+    - php7.2-mbstring
+    - php7.2-mysqli
+    - php7.2-mysql
+    - php7.2-mysqlnd
+    - php7.2-odbc
+    - php7.2-opcache
+    - php7.2-pdo
+    - php7.2-pgsql
+    - php7.2-phar
+    - php7.2-posix
+    - php7.2-pspell
+    - php7.2-redis
+    - php7.2-soap
+    - php7.2-sodium
+    - php7.2-sqlite3
+    - php7.2-sysvmsg
+    - php7.2-sysvsem
+    - php7.2-sysvshm
+    - php7.2-tidy
+    - php7.2-xmlreader
+    - php7.2-xmlrpc
+    - php7.2-xmlwriter
+    - php7.2-xsl
+    - php7.2-zip
+
+- name: Original - PHP7.2 - Modification de upload_max_filesize (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^upload_max_filesize'
+    line: 'upload_max_filesize = 2M'
+    state: present
+
+- name: Original - PHP7.2 - Modification de post_max_size (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^post_max_size'
+    line: 'post_max_size = 64M'
+    state: present
+
+- name: Original - PHP7.2 - Modification de memory_limit (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^memory_limit'
+    line: 'memory_limit = 128M'
+    state: present
+
+- name: Original - PHP7.2 - Modification de max_execution_time (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^max_execution_time'
+    line: 'max_execution_time = 520'
+    state: present
+
+- name: Original - PHP7.2 - Modification de max_input_time (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^max_input_time'
+    line: 'max_input_time = 60'
+    state: present
+
+- name: Original - PHP7.2 - Modification de opcache.enable (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^;opcache.enable'
+    line: 'opcache.enable = on'
+    state: present
+
+- name: Original - PHP7.2 - Modification de disable_functions (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    regexp: '^disable_functions'
+    line: 'disable_functions = opcache_get_status'
+    state: present
+
+- name: Original - PHP7.2 - Ajout de session.name (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    line: 'session.name = __cfwaz'
+
+- name: Original - PHP7.2 - Ajout de session.cookie_secure (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    line: 'session.cookie_secure = 1'
+
+- name: Original - PHP7.2 - Ajout de session.cookie_httponly (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    line: 'session.cookie_httponly = 1'
+
+- name: Original - PHP7.2 - Ajout de session.sid_length (php.ini)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    line: 'session.sid_length = 40'
+
+- name: Original - PHP7.2 - Ajout de pm.max_children (php-fpm.conf)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php-fpm.conf
+    line: 'pm.max_children = 10000'
+
+- name: Original - PHP7.2 - Ajout de pm (php-fpm.conf)
+  lineinfile:
+    path: /etc/php/7.2/fpm/php-fpm.conf
+    line: 'pm = ondemand'
+
+- name: Original - PHP7.2 - Redémarrage de php7.2
+  shell:
+    cmd: /etc/init.d/php7.2-fpm restart
+
+- name: Original - PHP7.2 - Activation des extensions
+  shell: |
+    phpenmod -v 7.2 pdo_mysql
+    phpenmod -v 7.2 pdo_odbc
+    phpenmod -v 7.2 pdo_pgsql
+    phpenmod -v 7.2 pdo_sqlite
+
+- name: Original - redémarrage de Nginx
+  service:
+    name: nginx
+    state: restarted

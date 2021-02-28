@@ -1,0 +1,193 @@
+---
+- name: Test - Vhost - 'Création du répertoire {{ nom_domaine }}'
+  file:
+    path: '/var/www/html/{{ nom_domaine }}'
+    state: directory
+    mode: '0755'
+    owner: ubuntu
+    group: ubuntu
+
+- name: Test - Vhost - Clone le depot vers /var/www/html/{{ nom_domaine }}
+  shell: git clone https://{{ git_user }}:{{ git_pass }}@{{ git_repo }} /var/www/html/{{ nom_domaine }}
+
+
+
+# Server Bloc juste pour retirer le default
+- name: Test - Vhost - Server Block Default
+  file:
+    path: /etc/nginx/sites-available/default
+    state: absent
+
+- name: Test - Vhost - Server Block Default
+  blockinfile:
+    path: "/etc/nginx/sites-available/default"
+    block: |
+      server {
+        listen 80;
+        listen [::]:80;
+
+        root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+      }
+    create: yes
+    mode: '0755'
+    owner: ubuntu
+    group: ubuntu
+
+# Nginx.conf juste pour server_names_hash_bucket_size 64;
+- name: Test - Vhost - nginx.conf
+  file:
+    path: /etc/nginx/nginx.conf
+    state: absent
+
+- name: Test - Vhost - nginx.conf
+  blockinfile:
+    path: /etc/nginx/nginx.conf
+    block: |
+      user www-data;
+      worker_processes auto;
+      pid /run/nginx.pid;
+      include /etc/nginx/modules-enabled/*.conf;
+
+      events {
+          worker_connections 768;
+          # multi_accept on;
+      }
+
+      http {
+
+          ##
+          # Basic Settings
+          ##
+
+          sendfile on;
+          tcp_nopush on;
+          tcp_nodelay on;
+          keepalive_timeout 65;
+          types_hash_max_size 2048;
+          # server_tokens off;
+
+          server_names_hash_bucket_size 64;
+          # server_name_in_redirect off;
+
+          include /etc/nginx/mime.types;
+          default_type application/octet-stream;
+
+          ##
+          # SSL Settings
+          ##
+
+          ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+          ssl_prefer_server_ciphers on;
+
+          ##
+          # Logging Settings
+          ##
+
+          access_log /var/log/nginx/access.log;
+          error_log /var/log/nginx/error.log;
+
+          ##
+          # Gzip Settings
+          ##
+
+          gzip on;
+
+          # gzip_vary on;
+          # gzip_proxied any;
+          # gzip_comp_level 6;
+          # gzip_buffers 16 8k;
+          # gzip_http_version 1.1;
+          # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+          ##
+          # Virtual Host Configs
+          ##
+
+          include /etc/nginx/conf.d/*.conf;
+          include /etc/nginx/sites-enabled/*;
+      }
+
+
+      #mail {
+      # # See sample authentication script at:
+      # # http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
+      # 
+      # # auth_http localhost/auth.php;
+      # # pop3_capabilities "TOP" "USER";
+      # # imap_capabilities "IMAP4rev1" "UIDPLUS";
+      # 
+      # server {
+      #         listen     localhost:110;
+      #         protocol   pop3;
+      #         proxy      on;
+      # }
+      # 
+      # server {
+      #         listen     localhost:143;
+      #         protocol   imap;
+      #         proxy      on;
+      # }
+      #}
+    create: yes
+    mode: '0755'
+    owner: ubuntu
+    group: ubuntu
+
+
+
+- name: Test - Vhost - Création du server block {{ nom_domaine }}
+  blockinfile:
+    path: "/etc/nginx/sites-available/{{ nom_domaine }}"
+    block: |
+      # Redirection http vers https
+      server {
+          listen 80 default_server;
+          listen [::]:80;
+          
+          root /var/www/html/{{ nom_domaine }}/public;
+          index index.php index.html index.htm;
+
+          add_header X-Frame-Options "SAMEORIGIN";
+          add_header X-XSS-Protection "1; mode=block";
+          add_header X-Content-Type-Options "nosniff";
+
+          server_name {{ nom_domaine }} www.{{ nom_domaine }};
+
+          # location / {
+          #     return 301 https://{{ nom_domaine }}$request_uri;
+          # }
+
+          location / {
+              try_files $uri $uri/ /index.php?$query_string;
+          }
+
+          location ~ \.php$ {
+              fastcgi_pass unix:/var/run/php/php{{ php_version }}-fpm.sock;
+              fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+              include fastcgi_params;
+          }
+      }
+    create: yes
+    mode: '0755'
+    owner: ubuntu
+    group: ubuntu
+
+- name: Test - Vhost - Activation du server Bloc
+  shell:
+    cmd: ln -s /etc/nginx/sites-available/{{ nom_domaine }} /etc/nginx/sites-enabled/
+  become: true
+
+- name: Test - Vhost - Redémarrage de Nginx
+  service:
+    name: nginx
+    state: restarted
+
+
+

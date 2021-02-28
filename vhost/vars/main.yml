@@ -1,0 +1,10 @@
+---
+# vars file for vhost
+
+#Selon déploiement 
+nom_domaine: test.cinetpay.link    
+git_repo: bitbucket.org/cinetpay_team/recrutement.git 
+git_user: Fitz-G
+git_pass: LeComptedemontechristo
+php_version: 7.2
+acme_email: david.koki@cinetpay.com
